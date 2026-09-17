@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finora workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="side-brand">
+        <strong>Finora</strong>
+        <span class="badge" id="type-badge">{{ user.account_type }}</span>
+      </div>
+      <div class="nav-group">Money in</div>
+      <button class="nav-btn active" data-view="overview">Overview</button>
+      <button class="nav-btn" data-view="next">Next options</button>
+      <button class="nav-btn" data-view="history">Year history</button>
+      <button class="nav-btn" data-view="salary">Salary & income</button>
+      <div class="nav-group">Movement</div>
+      <button class="nav-btn" data-view="spend">Monthly spend</button>
+      <button class="nav-btn" data-view="phone">Phone / UPI</button>
+      <button class="nav-btn" data-view="cash">Cash</button>
+      <div class="nav-group">After savings</div>
+      <button class="nav-btn" data-view="sip">SIP</button>
+      <button class="nav-btn" data-view="plans">Financial saving</button>
+      <button class="nav-btn" data-view="emi">EMI</button>
+      <div class="nav-group">Tools</div>
+      <button class="nav-btn" data-view="budgets">Budgets & bills</button>
+      <button class="nav-btn" data-view="import">Import CSV</button>
+      <button class="nav-btn" data-view="fx">Currency</button>
+      <button class="nav-btn" data-view="vault">Password vault</button>
+      <button class="nav-btn" data-view="notes">Memos</button>
+      <button class="nav-btn" data-view="profile">Profile</button>
+      <p class="footer-note" id="org-line"></p>
+    </aside>
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div class="kicker" id="hello"></div>
+          <h1 id="view-title">Overview</h1>
+        </div>
+        <div class="top-actions">
+          <select id="year"></select>
+          <input type="month" id="month" />
+          <a class="ghost" id="export-link" href="/api/export.csv">Export CSV</a>
+          <button class="ghost" id="logout">Sign out</button>
+        </div>
+      </div>
+      <div id="mode-note" class="notice hidden"></div>
+      <div class="stage-wrap">
+        <button class="slide-nav" id="slide-prev" type="button" aria-label="Previous slide">‹</button>
+        <div class="stage" id="stage">
+      <section class="slide is-active" data-panel="overview">
+        <div class="kpis" id="kpis"></div>
+        <div class="split">
+          <article class="card">
+            <div class="eyebrow">This month’s split</div>
+            <div class="chart-wrap"><div class="donut-box"><canvas id="donut"></canvas></div></div>
+          </article>
+          <article class="card">
+            <div class="eyebrow">Where it went</div>
+            <div class="chart-wrap"><div class="bar-box"><canvas id="bars"></canvas></div></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="slide" data-panel="next">
+        <div class="kpis" id="next-kpis"></div>
+        <article class="card" id="next-box"></article>
+      </section>
+
+      <section class="slide" data-panel="history">
+        <article class="card">
+          <h3>Years of entries</h3>
+          <p class="eyebrow">Income, spend, and leftover across every year on this account.</p>
+          <div class="year-grid" id="year-grid"></div>
+        </article>
+      </section>
+
+      <section class="slide" data-panel="salary">
+        <article class="card">
+          <h3>Add income</h3>
+          <form class="form-grid" data-form="income">
+            <input name="title" placeholder="Title" required />
+            <select name="source">
+              <option value="salary">Salary</option>
+              <option value="stipend">Stipend</option>
+              <option value="revenue">Revenue</option>
+              <option value="allowance">Allowance</option>
+              <option value="side">Side income</option>
+            </select>
+            <input name="amount" type="number" step="0.01" placeholder="Amount" required />
+            <input name="month" type="month" />
+            <input name="credit_day" type="number" min="1" max="28" placeholder="Bank credit day (1-28)" />
+            <input name="bank_name" placeholder="Bank name" />
+            <button class="solid wide" type="submit">Save income & generate credit code</button>
+          </form>
+        </article>
+        <article class="card" style="margin-top:16px"><table class="table" id="income-table"></table></article>
+      </section>
+
+      <section class="slide" data-panel="spend">
+        <article class="card">
+          <h3>Log expenditure</h3>
+          <form class="form-grid" data-form="txn" data-channel="">
+            <input name="title" placeholder="What happened" required />
+            <select name="category" data-cats></select>
+            <select name="channel">
+              <option value="phone">Phone / UPI</option>
+              <option value="cash">Cash</option>
+              <option value="card">Card</option>
+              <option value="bank">Bank</option>
+            </select>
+            <input name="amount" type="number" step="0.01" required placeholder="Amount" />
+            <input name="occurred_on" type="date" />
+            <input name="merchant" placeholder="Merchant" />
+            <button class="solid wide" type="submit">Add spend</button>
+          </form>
+        </article>
+        <article class="card" style="margin-top:16px"><table class="table" id="spend-table"></table></article>
+      </section>
+
+      <section class="slide" data-panel="phone">
+        <article class="card"><h3>Phone & UPI ledger</h3><table class="table" id="phone-table"></table></article>
+      </section>
+      <section class="slide" data-panel="cash">
+        <article class="card"><h3>Cash ledger</h3><table class="table" id="cash-table"></table></article>
+      </section>
+
+      <section class="slide" data-panel="sip">
+        <article class="card">
+          <h3>New SIP — from leftover savings</h3>
+          <form class="form-grid" data-form="sip">
+            <input name="name" placeholder="Fund name" required />
+            <input name="monthly_amount" type="number" step="0.01" placeholder="Monthly amount" required />
+            <input name="expected_return" type="number" step="0.1" placeholder="Expected % p.a." />
+            <input name="tenure_months" type="number" placeholder="Tenure months" />
+            <input name="start_month" type="month" />
+            <input name="folio" placeholder="Folio (optional)" />
+            <button class="solid wide" type="submit">Add SIP</button>
+          </form>
+        </article>
+        <article class="card" style="margin-top:16px" id="sip-list"></article>
+      </section>
+
+      <section class="slide" data-panel="plans">
+        <article class="card">
+          <h3>Financial saving plans</h3>
+          <form class="form-grid" data-form="saving">
+            <input name="name" placeholder="Plan name" required />
+            <select name="kind">
+              <option value="emergency">Emergency</option>
+              <option value="fd">Fixed deposit</option>
+              <option value="rd">Recurring</option>
+              <option value="goal">Goal</option>
+            </select>
+            <input name="target_amount" type="number" step="0.01" placeholder="Target" required />
+            <input name="current_amount" type="number" step="0.01" placeholder="Current" />
+            <input name="monthly_contribution" type="number" step="0.01" placeholder="Monthly contribution" />
+            <button class="solid wide" type="submit">Save plan</button>
+          </form>
+        </article>
+        <article class="card" style="margin-top:16px" id="plan-list"></article>
+      </section>
+
+      <section class="slide" data-panel="emi">
+        <article class="card">
+          <h3>EMI from remaining cashflow</h3>
+          <form class="form-grid" data-form="emi">
+            <input name="name" placeholder="Loan name" required />
+            <input name="principal" type="number" step="0.01" placeholder="Principal" required />
+            <input name="annual_rate" type="number" step="0.01" placeholder="Interest % p.a." required />
+            <input name="tenure_months" type="number" placeholder="Tenure months" required />
+            <input name="start_month" type="month" />
+            <input name="paid_installments" type="number" placeholder="Paid so far" />
+            <button class="solid wide" type="submit">Add EMI</button>
+          </form>
+        </article>
+        <article class="card" style="margin-top:16px" id="emi-list"></article>
+      </section>
+
+      <section class="slide" data-panel="budgets">
+        <div class="split">
+          <article class="card">
+            <h3>Category budgets</h3>
+            <form class="form-grid" data-form="budget">
+              <select name="category" data-cats></select>
+              <input name="monthly_limit" type="number" step="0.01" placeholder="Limit" required />
+              <button class="solid wide" type="submit">Set budget</button>
+            </form>
+            <div id="budget-list"></div>
+          </article>
+          <article class="card">
+            <h3>Recurring bills</h3>
+            <form class="form-grid" data-form="bill">
+              <input name="name" placeholder="Bill name" required />
+              <input name="amount" type="number" step="0.01" required />
+              <input name="due_day" type="number" placeholder="Due day" />
+              <select name="category" data-cats></select>
+              <button class="solid wide" type="submit">Add bill</button>
+            </form>
+            <div id="bill-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="slide" data-panel="fx">
+        <article class="card">
+          <h3>Country-wise converter</h3>
+          <form class="fx-grid" id="fx-form">
+            <div>
+              <label>From</label>
+              <select id="fx-from"></select>
+            </div>
+            <button class="ghost" type="button" id="fx-swap">⇄</button>
+            <div>
+              <label>To</label>
+              <select id="fx-to"></select>
+            </div>
+            <input id="fx-amount" type="number" step="0.01" value="1000" class="wide" />
+            <button class="solid wide" type="submit">Convert</button>
+          </form>
+          <h2 id="fx-result"></h2>
+          <p class="eyebrow" id="fx-meta"></p>
+          <input id="fx-search" placeholder="Search country" />
+          <div class="country-list" id="fx-countries"></div>
+        </article>
+      </section>
+
+      <section class="slide" data-panel="vault">
+        <div class="vault-lock" id="vault-lock">
+          <h3>Unlock vault</h3>
+          <p>Passwords are encrypted with a PIN you set. Nothing is stored until you add it.</p>
+          <form id="vault-unlock">
+            <input id="vault-pin" type="password" placeholder="PIN" />
+            <p class="msg" id="vault-msg"></p>
+            <button class="solid" type="submit">Unlock</button>
+          </form>
+          <form id="vault-set" style="margin-top:18px">
+            <p class="eyebrow">Or set / reset a PIN</p>
+            <input id="vault-new-pin" type="password" placeholder="New PIN" />
+            <button class="ghost" type="submit">Save PIN</button>
+          </form>
+        </div>
+        <div id="vault-box" class="hidden">
+          <article class="card">
+            <form class="form-grid" data-form="vault">
+              <input name="label" placeholder="Label" required />
+              <input name="login_id" placeholder="Username / ID" />
+              <input name="password" type="password" placeholder="Password" required />
+              <input name="website" placeholder="Website" />
+              <select name="category">
+                <option value="login">Login</option>
+                <option value="bank">Bank</option>
+                <option value="govt">Government</option>
+                <option value="campus">Campus</option>
+              </select>
+              <button class="solid wide" type="submit">Store secret</button>
+            </form>
+          </article>
+          <article class="card" style="margin-top:16px" id="vault-list"></article>
+        </div>
+      </section>
+
+      <section class="slide" data-panel="import">
+        <article class="card drop">
+          <h3>Import bank or expense CSV</h3>
+          <p>Accepted headers: date, title or description, amount — or debit/credit. Dates like 2026-09-17 or 17/09/2026 are converted automatically.</p>
+          <form id="csv-form">
+            <input type="file" name="file" accept=".csv,text/csv" required />
+            <button class="solid" type="submit" style="margin-top:12px">Convert and add</button>
+          </form>
+          <p class="msg" id="csv-msg"></p>
+          <div id="csv-result"></div>
+        </article>
+      </section>
+
+      <section class="slide" data-panel="notes">
+        <article class="card">
+          <form class="form-grid" data-form="memo">
+            <input name="title" placeholder="Title" required />
+            <select name="tag">
+              <option value="general">General</option>
+              <option value="tax">Tax</option>
+              <option value="ops">Ops</option>
+              <option value="campus">Campus</option>
+            </select>
+            <textarea name="body" class="wide" rows="4" placeholder="Note"></textarea>
+            <button class="solid wide" type="submit">Save memo</button>
+          </form>
+        </article>
+        <article class="card" style="margin-top:16px" id="memo-list"></article>
+      </section>
+
+      <section class="slide" data-panel="profile">
+        <article class="card">
+          <form class="form-grid" id="profile-form">
+            <input name="full_name" placeholder="Name" />
+            <input name="organization" placeholder="Company / college" />
+            <input name="city" placeholder="City" />
+            <input name="base_currency" placeholder="INR" />
+            <input name="bank_name" placeholder="Salary bank" />
+            <input name="salary_credit_day" type="number" min="1" max="28" placeholder="Salary credit day" />
+            <button class="solid wide" type="submit">Update profile</button>
+          </form>
+        </article>
+      </section>
+        </div>
+        <button class="slide-nav" id="slide-next" type="button" aria-label="Next slide">›</button>
+      </div>
+      <div class="slide-dots" id="slide-dots"></div>
+    </main>
+  </div>
+  <script src="{{ url_for('static', filename='js/workspace.js') }}"></script>
+</body>
+</html>

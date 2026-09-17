@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finora — salary, spend, and after-savings workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">Finora <small>Ledger</small></div>
+    <div>
+      <a class="ghost" href="/login">Sign in</a>
+      <a class="solid" href="/register">Open a workspace</a>
+    </div>
+  </header>
+  <section class="hero-grid">
+    <div>
+      <div class="kicker">Personal · Business · Campus</div>
+      <h1 class="display">See the month before it spends itself.</h1>
+      <p class="lede">Track salary, phone and cash movement, then park what remains into SIPs, goals, and EMIs. One workspace, three kinds of life.</p>
+      <div class="coverflow" id="mode-flow">
+        <article class="mode-card" data-slot="-1"><b>Personal</b><span>Salary, rent, UPI, cash, household budgets.</span></article>
+        <article class="mode-card" data-slot="0"><b>Business</b><span>Payroll, vendors, GST, runway, studio loans.</span></article>
+        <article class="mode-card" data-slot="1"><b>Student</b><span>Fees, hostel, mess, stipend, semester goals.</span></article>
+      </div>
+      <a class="solid" href="/register">Create your workspace</a>
+    </div>
+    <aside class="scene-3d">
+      <div class="preview">
+      <div class="preview-row"><span>This month</span><span>Your numbers</span></div>
+      <div class="donut-fake"></div>
+      <div class="preview-row"><span>Expenditure</span><span>SIP · Saving · EMI</span></div>
+      <div class="preview-row"><span>Leftover</span><span>You add it</span></div>
+      </div>
+    </aside>
+  </section>
+  <section class="feature-band scene-3d">
+    <article><h3>After savings</h3><p>Whatever is left after spend is split into SIP, financial goals, and EMI — not mixed into the grocery list.</p></article>
+    <article><h3>Phone & cash</h3><p>UPI, cards, bank, and cash sit as separate ledgers so weekend cash does not vanish.</p></article>
+    <article><h3>World FX</h3><p>Convert by country, not just ticker, with live rates and a quiet fallback if the network drops.</p></article>
+    <article><h3>Password vault</h3><p>Bank and campus logins stay behind a PIN, encrypted on the server, never in the sidebar in plain sight.</p></article>
+  </section>
+  <script>
+    const cards = [...document.querySelectorAll("#mode-flow .mode-card")];
+    const rotate = (dir) => {
+      cards.forEach((card) => {
+        const slot = Number(card.dataset.slot) + dir;
+        card.dataset.slot = slot > 1 ? -1 : slot < -1 ? 1 : slot;
+      });
+    };
+    cards.forEach((card) => card.addEventListener("click", () => rotate(1)));
+    setInterval(() => rotate(1), 2800);
+  </script>
+</body>
+</html>
